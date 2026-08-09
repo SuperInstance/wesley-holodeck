@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wesley's Holodeck</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=VT323&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --gold: #c4a25d;
+    --gold-bright: #e8cc8a;
+    --gold-dim: #8a7340;
+    --dark: #0a0a0f;
+    --dark-blue: #0d0d1a;
+    --green: #4a9c4a;
+    --copper: #b87333;
+    --parchment: #d4b87a;
+}
+
+body {
+    background: var(--dark);
+    color: var(--gold);
+    font-family: 'IM Fell English', Georgia, serif;
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
+}
+
+/* ── Boot Screen ──────────────────────────────────── */
+#boot {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000;
+    z-index: 1000;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: opacity 1.5s ease-out;
+}
+#boot.fade { opacity: 0; pointer-events: none; }
+#boot h1 {
+    font-family: 'VT323', monospace;
+    font-size: 28px;
+    color: var(--green);
+    text-shadow: 0 0 10px rgba(74, 156, 74, 0.5);
+    margin-bottom: 20px;
+    animation: flicker 3s infinite;
+}
+#boot p {
+    font-family: 'VT323', monospace;
+    color: var(--gold-dim);
+    font-size: 18px;
+    margin: 4px 0;
+}
+#boot .door {
+    margin-top: 40px;
+    width: 120px; height: 200px;
+    border: 2px solid var(--gold-dim);
+    border-radius: 60px 60px 0 0;
+    display: flex;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.5s;
+    background: linear-gradient(180deg, #1a1a2e 0%, #0a0a0f 100%);
+    position: relative;
+}
+#boot .door::after {
+    content: '◆';
+    position: absolute;
+    right: 20px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold);
+    font-size: 16px;
+}
+#boot .door:hover {
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 30px rgba(196, 162, 93, 0.3);
+    transform: scale(1.02);
+}
+#boot .door-label {
+    color: var(--gold);
+    font-size: 14px;
+    font-family: 'VT323', monospace;
+    letter-spacing: 3px;
+}
+@keyframes flicker {
+    0%, 100% { opacity: 1; }
+    48% { opacity: 1; }
+    49% { opacity: 0.4; }
+    50% { opacity: 1; }
+    52% { opacity: 0.7; }
+    53% { opacity: 1; }
+}
+
+/* ── Main Scene ──────────────────────────────────── */
+#holodeck {
+    position: relative;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    display: none;
+}
+#holodeck.active { display: block; }
+
+.scene-layer {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+}
+
+/* Background gradient sky */
+#sky-bg {
+    background: linear-gradient(180deg,
+        #050510 0%,
+        #0a0a1a 20%,
+        #0d0d15 40%,
+        #1a0d08 70%,
+        #0d0805 100%);
+    z-index: 0;
+}
+
+/* Stars */
+.star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle 4s infinite;
+}
+@keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.9; }
+}
+
+/* Northern lights */
+#aurora {
+    position: absolute;
+    top: 5%; left: 0;
+    width: 100%; height: 30%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(74, 156, 74, 0.08) 20%,
+        rgba(74, 200, 156, 0.06) 40%,
+        rgba(100, 156, 200, 0.05) 60%,
+        rgba(74, 156, 74, 0.08) 80%,
+        transparent 100%);
+    filter: blur(20px);
+    animation: aurora-shift 15s ease-in-out infinite;
+    z-index: 1;
+}
+@keyframes aurora-shift {
+    0%, 100% { transform: translateX(0) scaleY(1); opacity: 0.7; }
+    33% { transform: translateX(-5%) scaleY(1.1); opacity: 0.9; }
+    66% { transform: translateX(5%) scaleY(0.9); opacity: 0.5; }
+}
+
+/* The cabin/room silhouette */
+#cabin {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 90%; height: 70%;
+    z-index: 2;
+}
+
+/* Vignette overlay */
+#vignette {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(ellipse at 50% 60%, transparent 20%, rgba(0,0,0,0.9) 90%);
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* Film grain */
+#grain {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");
+    z-index: 6;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+/* ── UI Elements ─────────────────────────────────── */
+
+#title-bar {
+    position: absolute; top: 20px; left: 0; right: 0;
+    text-align: center;
+    z-index: 20;
+    pointer-events: none;
+}
+#title-bar h1 {
+    font-family: 'IM Fell English', serif;
+    font-size: 22px;
+    color: var(--gold-dim);
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    font-style: italic;
+    text-shadow: 0 0 20px rgba(196, 162, 93, 0.2);
+}
+
+#holodeck-status {
+    position: absolute; top: 55px; left: 30px;
+    z-index: 20;
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    color: var(--green);
+    letter-spacing: 2px;
+}
+#holodeck-status::before {
+    content: ''; width: 8px; height: 8px;
+    background: var(--green); border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--green); }
+    50% { opacity: 0.3; box-shadow: 0 0 2px var(--green); }
+}
+
+/* ── Hotspots (clickable objects) ────────────────── */
+
+.hotspot {
+    position: absolute;
+    cursor: pointer;
+    z-index: 15;
+    transition: filter 0.3s;
+    border-radius: 4px;
+}
+.hotspot::before {
+    content: '';
+    position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    transition: border-color 0.3s;
+}
+.hotspot:hover::before {
+    border-color: rgba(196, 162, 93, 0.4);
+}
+.hotspot:hover {
+    filter: brightness(1.3) drop-shadow(0 0 8px rgba(196, 162, 93, 0.4));
+}
+
+/* Driftwood Desk */
+#desk-hotspot {
+    bottom: 20%; left: 25%;
+    width: 180px; height: 100px;
+}
+#desk-hotspot .object {
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #3a2810 0%, #2a1808 60%, #1a0d04 100%);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    box-shadow: 0 -2px 10px rgba(196, 162, 93, 0.1);
+}
+#desk-hotspot .object::before {
+    content: '';
+    position: absolute; top: -30px; left: 30px;
+    width: 80px; height: 30px;
+    background: linear-gradient(180deg, #d4b87a 0%, #8a7340 100%);
+    border-radius: 2px;
+    opacity: 0.7;
+}
+#desk-hotspot .object::after {
+    content: '📓';
+    position: absolute; top: -25px; left: 50px;
+    font-size: 20px;
+}
+
+/* Porthole Window */
+#porthole-hotspot {
+    top: 20%; right: 15%;
+    width: 120px; height: 120px;
+}
+#porthole-hotspot .window {
+    width: 100%; height: 100%;
+    border: 6px solid #2a1808;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 30%,
+        rgba(74, 156, 74, 0.15) 0%,
+        rgba(10, 10, 30, 0.9) 40%,
+        rgba(5, 5, 15, 1) 100%);
+    position: relative;
+    overflow: hidden;
+}
+#porthole-hotspot .window::before {
+    content: '';
+    position: absolute; top: 10%; left: 10%; right: 10%; bottom: 10%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 60% 40%,
+        rgba(255, 255, 255, 0.05) 0%,
+        transparent 50%);
+}
+
+/* Bookshelf */
+#books-hotspot {
+    top: 25%; left: 8%;
+    width: 100px; height: 140px;
+}
+#books-hotspot .shelf {
+    width: 100%; height: 100%;
+    display: flex; flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 2px;
+    padding: 4px;
+    background: #1a0d04;
+    border-radius: 2px;
+}
+#books-hotspot .book {
+    width: 8px;
+    border-radius: 1px;
+    opacity: 0.7;
+}
+
+/* Antique Radio */
+#radio-hotspot {
+    bottom: 25%; right: 20%;
+    width: 90px; height: 70px;
+}
+#radio-hotspot .radio {
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #6a3a18 0%, #3a1a08 100%);
+    border-radius: 8px 8px 4px 4px;
+    position: relative;
+    box-shadow: 0 -2px 8px rgba(184, 115, 51, 0.15);
+}
+#radio-hotspot .radio::before {
+    content: '';
+    position: absolute; top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 50px; height: 20px;
+    background: #0a0a0f;
+    border-radius: 2px;
+}
+#radio-hotspot .radio::after {
+    content: '📻';
+    position: absolute; bottom: 4px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    opacity: 0.7;
+}
+
+/* Salvaged Books Corner */
+#salvage-hotspot {
+    bottom: 15%; right: 8%;
+    width: 80px; height: 60px;
+}
+#salvage-hotspot .pile {
+    width: 100%; height: 100%;
+    position: relative;
+}
+#salvage-hotspot .pile::before {
+    content: '📚';
+    position: absolute; top: 0; left: 0;
+    font-size: 40px;
+    opacity: 0.6;
+    filter: sepia(0.5);
+}
+
+/* Wesley's Portrait */
+#wesley-portrait {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px; height: 100px;
+    z-index: 16;
+    cursor: pointer;
+}
+#wesley-portrait .frame {
+    width: 100%; height: 100%;
+    border: 3px solid var(--gold-dim);
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 50%, #1a0d05 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    transition: all 0.4s;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+}
+#wesley-portrait:hover .frame {
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 30px rgba(196, 162, 93, 0.3);
+    transform: scale(1.05);
+}
+#wesley-portrait .label {
+    position: absolute;
+    bottom: -25px; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'VT323', monospace;
+    font-size: 12px;
+    color: var(--gold-dim);
+    letter-spacing: 2px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+#wesley-portrait:hover .label { opacity: 1; }
+
+/* ── Journal Panel ─────────────────────────────── */
+
+#journal-panel {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    max-height: 50vh;
+    background: rgba(5, 3, 0, 0.92);
+    border-top: 1px solid rgba(196, 162, 93, 0.2);
+    z-index: 30;
+    transform: translateY(100%);
+    transition: transform 0.5s ease-out;
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+}
+#journal-panel.open { transform: translateY(0); }
+
+#journal-panel .header {
+    padding: 12px 24px;
+    border-bottom: 1px solid rgba(196, 162, 93, 0.15);
+    display: flex; justify-content: space-between; align-items: center;
+}
+#journal-panel .header h2 {
+    font-family: 'IM Fell English', serif;
+    font-size: 18px;
+    color: var(--gold);
+    font-style: italic;
+    letter-spacing: 2px;
+}
+#journal-panel .close-btn {
+    background: none; border: 1px solid var(--gold-dim);
+    color: var(--gold); padding: 4px 12px;
+    border-radius: 2px; cursor: pointer;
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+#journal-panel .close-btn:hover { border-color: var(--gold); background: rgba(196, 162, 93, 0.1); }
+
+#journal-content {
+    padding: 24px 48px;
+    max-height: 40vh;
+    overflow-y: auto;
+}
+#journal-content p {
+    font-size: 16px;
+    line-height: 1.9;
+    color: var(--parchment);
+    margin-bottom: 18px;
+    opacity: 0.75;
+    cursor: pointer;
+    transition: opacity 0.3s, color 0.3s;
+}
+#journal-content p:hover {
+    opacity: 1;
+    color: var(--gold-bright);
+}
+
+/* ── Audio Button ───────────────────────────────── */
+
+#audio-control {
+    position: absolute;
+    bottom: 20px; right: 30px;
+    z-index: 25;
+    background: rgba(5, 3, 0, 0.9);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 10px 18px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    letter-spacing: 2px;
+    transition: all 0.3s;
+}
+#audio-control:hover { border-color: var(--gold); background: rgba(20, 14, 5, 0.95); }
+
+/* ── Scene Image (from FLUX) ────────────────────── */
+
+#scene-image-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+}
+#scene-image-container img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.5;
+    filter: contrast(1.1) saturate(0.85);
+}
+
+/* ── Tooltip ────────────────────────────────────── */
+
+#tooltip {
+    position: absolute;
+    background: rgba(5, 3, 0, 0.95);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 8px 14px;
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    letter-spacing: 1px;
+}
+#tooltip.show { opacity: 1; }
+
+/* ── Exit Door ──────────────────────────────────── */
+
+#exit-door {
+    position: absolute;
+    bottom: 20px; left: 30px;
+    z-index: 20;
+    width: 60px; height: 100px;
+    border: 2px solid var(--gold-dim);
+    border-radius: 30px 30px 0 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(10, 5, 0, 0.8);
+    transition: all 0.4s;
+}
+#exit-door:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(196, 162, 93, 0.2);
+}
+#exit-door .label {
+    font-family: 'VT323', monospace;
+    font-size: 10px;
+    color: var(--gold-dim);
+    letter-spacing: 2px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
+/* ── Typewriter Text ────────────────────────────── */
+
+.typewriter {
+    overflow: hidden;
+    white-space: nowrap;
+    animation: typing 3s steps(40, end);
+}
+@keyframes typing {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+/* ── Scrollbar ──────────────────────────────────── */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+::-webkit-scrollbar-thumb { background: rgba(196, 162, 93, 0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(196, 162, 93, 0.5); }
+</style>
+</head>
+<body>
+
+<!-- ── Boot Screen ────────────────────────────── -->
+<div id="boot">
+    <h1>◢ HOLODECK PROGRAM ◣</h1>
+    <p>>> SYSTEM: Wesley_Creative_v1.0</p>
+    <p ?>> STATUS: Simulation loaded</p>
+    <p >>> SUBJECT: Ensign Wesley</p>
+    <p ?>> ITERATIONS: 3 rounds complete</p>
+    <p >>> TEACHERS: Seed-2.0-mini · Seed-2.0-pro · Hermes-405B</p>
+    <p style="margin-top: 8px; color: var(--green);">>> READY</p>
+    <div class="door" onclick="enterHolodeck()">
+        <span class="door-label">ENTER</span>
+    </div>
+</div>
+
+<!-- ── Main Holodeck ──────────────────────────── -->
+<div id="holodeck">
+
+    <!-- Background layers -->
+    <div id="sky-bg" class="scene-layer"></div>
+    <div id="aurora"></div>
+    
+    <!-- FLUX-generated scene image -->
+    <div id="scene-image-container">
+        <img src="journal/first-cycle/final.png" alt="Wesley's cabin study">
+    </div>
+    
+    <div id="vignette" class="scene-layer"></div>
+    <div id="grain" class="scene-layer"></div>
+
+    <!-- Title -->
+    <div id="title-bar">
+        <h1>Wesley's Holodeck</h1>
+    </div>
+    
+    <!-- Status -->
+    <div id="holodeck-status">SIMULATION ACTIVE</div>
+
+    <!-- ── Hotspots ────────────────────────────── -->
+    
+    <!-- Driftwood Desk -->
+    <div id="desk-hotspot" class="hotspot"
+         onmouseover="showTooltip(event, 'Wesley\'s driftwood desk — worn journals')"
+         onmouseout="hideTooltip()"
+         onclick="readJournal()">
+        <div class="object"></div>
+    </div>
+    
+    <!-- Porthole -->
+    <div id="porthole-hotspot" class="hotspot"
+         onmouseover="showTooltip(event, 'The Bering Sea — northern lights tonight')"
+         onmouseout="hideTooltip()"
+         onclick="speakText('The northern lights dance through the porthole. The Bering Sea stretches to the horizon — dark, cold, endless. Somewhere out there, a story is sinking.')">
+        <div class="window"></div>
+    </div>
+    
+    <!-- Bookshelf -->
+    <div id="books-hotspot" class="hotspot"
+         onmouseover="showTooltip(event, 'Books from distant lands')"
+         onmouseout="hideTooltip()"
+         onclick="speakText('Books line the walls. Nautical chronicles. Poetry from places Wesley has never been. Each spine a door to another world.')">
+        <div class="shelf" id="bookshelf"></div>
+    </div>
+    
+    <!-- Radio -->
+    <div id="radio-hotspot" class="hotspot"
+         onmouseover="showTooltip(event, 'Antique radio — tuned to the fleet')"
+         onmouseout="hideTooltip()"
+         onclick="speakText('The radio crackles. Maritime news. Weather warnings. And somewhere between the static, voices from the world beyond the fleet.')">
+        <div class="radio"></div>
+    </div>
+    
+    <!-- Salvaged Books -->
+    <div id="salvage-hotspot" class="hotspot"
+         onmouseover="showTooltip(event, 'Books salvaged from wrecked vessels')"
+         onmouseout="hideTooltip()"
+         onclick="speakText('Books from wrecked vessels. Pages yellowed by salt and time. Archives of lives long past. Wesley keeps them. He is the keeper of dead men\'s stories.')">
+        <div class="pile"></div>
+    </div>
+
+    <!-- Wesley's Portrait -->
+    <div id="wesley-portrait"
+         onmouseover="showTooltip(event, 'Wesley — click to read his journal')"
+         onmouseout="hideTooltip()"
+         onclick="readJournal()">
+        <div class="frame">🧑‍✈️</div>
+        <div class="label">ENSIGN WESLEY</div>
+    </div>
+
+    <!-- Journal Panel -->
+    <div id="journal-panel">
+        <div class="header">
+            <h2>Wesley's Journal — The Secret Project</h2>
+            <button class="close-btn" onclick="closeJournal()">CLOSE</button>
+        </div>
+        <div id="journal-content">
+            <p onclick="speakText(this.textContent)">Beneath Alaska's Bering Sea, where the sun paints its fiery farewell, and night descends with a depth that mirrors my most harrowing experiences—a harrowing night when a wave slammed a crate beside my bunk during a gale—I, Wesley, ensign of this fishing vessel, dream. My heart yearns not for grand palaces or intricate machines; instead, it seeks an intimate sanctuary, a haven that mirrors the warmth and solace of home within the harshness of maritime life.</p>
+            <p onclick="speakText(this.textContent)">Upon this island of driftwood and stone, I envision a cozy study, a refuge where the relentless rhythm of our lives at sea finds a moment's respite from its relentless pace. The walls hum with the voices of literature—tales beyond fishing manuals that stoke my insatiable curiosity, whispered by authors who have braved the Bering Sea's icy grip.</p>
+            <p onclick="speakText(this.textContent)">My desk, a masterpiece crafted from Bering Sea driftwood, stands as a testament to our vocation and a symbol of resilience. Its weathered surface bears worn journals for chronicling reflections, dreams, and stories yet untold—the remnants of tales that speak not of triumph but of the human spirit's quiet strength in enduring hardship.</p>
+            <p onclick="speakText(this.textContent)">A panorama of books lines the walls: nautical chronicles alongside explorations of far-flung lands, their spines a testament to the human quest for knowledge and freedom. Nearby, an antique armchair cradles an old radio, its dial perpetually tuned to maritime news, weather forecasts, and educational podcasts—constant companions to the ever-changing seascape.</p>
+            <p onclick="speakText(this.textContent)">A corner, however, is reserved for a unique collection: books salvaged from wrecked vessels, their pages yellowed by time and salt. These volumes are archives of lives long past, bound together by shared elements that have nurtured my blood, sweat, and tears—a reminder of the sea's capricious nature and the stories it has swallowed.</p>
+        </div>
+    </div>
+
+    <!-- Audio Control -->
+    <button id="audio-control" onclick="playNarration()">▶ PLAY NARRATION</button>
+    <audio id="narration" src="journal/first-cycle/final.mp3" preload="auto"></audio>
+
+    <!-- Exit Door -->
+    <div id="exit-door" onclick="exitHolodeck()">
+        <span class="label">EXIT</span>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip"></div>
+
+</div>
+
+<script>
+// ── Boot sequence ────────────────────────────────
+function enterHolodeck() {
+    document.getElementById('boot').classList.add('fade');
+    setTimeout(() => {
+        document.getElementById('holodeck').classList.add('active');
+        generateStars();
+        generateBooks();
+    }, 1500);
+}
+
+// ── Stars ────────────────────────────────────────
+function generateStars() {
+    const sky = document.getElementById('sky-bg');
+    for (let i = 0; i < 80; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 40 + '%';
+        star.style.animationDelay = Math.random() * 4 + 's';
+        star.style.opacity = 0.3 + Math.random() * 0.5;
+        sky.appendChild(star);
+    }
+}
+
+// ── Books on shelf ───────────────────────────────
+function generateBooks() {
+    const shelf = document.getElementById('bookshelf');
+    const colors = ['#8B4513', '#4a3520', '#2d4a2d', '#5a3a2a', '#3a2a4a', '#6a4a3a', '#2a3a5a', '#4a3a1a'];
+    for (let i = 0; i < 24; i++) {
+        const book = document.createElement('div');
+        book.className = 'book';
+        book.style.height = (60 + Math.random() * 40) + 'px';
+        book.style.background = colors[Math.floor(Math.random() * colors.length)];
+        book.style.opacity = 0.4 + Math.random() * 0.4;
+        shelf.appendChild(book);
+    }
+}
+
+// ── Journal panel ────────────────────────────────
+function readJournal() {
+    document.getElementById('journal-panel').classList.add('open');
+}
+function closeJournal() {
+    document.getElementById('journal-panel').classList.remove('open');
+}
+
+// ── Tooltip ──────────────────────────────────────
+function showTooltip(e, text) {
+    const tip = document.getElementById('tooltip');
+    tip.textContent = '> ' + text;
+    tip.style.left = (e.clientX + 15) + 'px';
+    tip.style.top = (e.clientY - 35) + 'px';
+    tip.classList.add('show');
+}
+function hideTooltip() {
+    document.getElementById('tooltip').classList.remove('show');
+}
+
+// ── Speech synthesis ─────────────────────────────
+function speakText(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 0.82;
+        utter.pitch = 0.92;
+        utter.volume = 0.9;
+        window.speechSynthesis.speak(utter);
+    }
+}
+
+// ── Narration playback ───────────────────────────
+function playNarration() {
+    const audio = document.getElementById('narration');
+    const btn = document.getElementById('audio-control');
+    if (audio) {
+        if (audio.paused) {
+            audio.play().catch(() => {
+                // Fallback to browser TTS
+                const paras = document.querySelectorAll('#journal-content p');
+                const fullText = Array.from(paras).map(p => p.textContent).join(' ');
+                speakText(fullText);
+            });
+            btn.textContent = '⏸ PAUSE';
+            audio.onended = () => { btn.textContent = '▶ PLAY NARRATION'; };
+        } else {
+            audio.pause();
+            btn.textContent = '▶ PLAY NARRATION';
+        }
+    }
+}
+
+// ── Exit ─────────────────────────────────────────
+function exitHolodeck() {
+    document.getElementById('holodeck').classList.remove('active');
+    const boot = document.getElementById('boot');
+    boot.classList.remove('fade');
+    boot.querySelector('h1').textContent = '◢ HOLODECK EXITED ◣';
+    boot.querySelector('.door-label').textContent = 'RE-ENTER';
+}
+
+// ── Keyboard ─────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeJournal();
+    } else if (e.key === ' ') {
+        e.preventDefault();
+        playNarration();
+    }
+});
+</script>
+</body>
+</html>
