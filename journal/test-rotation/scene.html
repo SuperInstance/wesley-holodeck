@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wesley's Holodeck — test-rotation</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0f; color: #c4a25d; font-family: 'Georgia', serif; overflow: hidden; height: 100vh; }
+#scene { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+.scene-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; z-index: 1; }
+#vignette { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.85) 100%); z-index: 2; pointer-events: none; }
+#scene-noise { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E"); z-index: 3; pointer-events: none; opacity: 0.4; }
+#journal { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 700px; max-height: 40vh; overflow-y: auto; background: rgba(10, 8, 5, 0.85); border: 1px solid #c4a25d33; border-radius: 4px; padding: 24px 32px; z-index: 10; backdrop-filter: blur(2px); cursor: pointer; transition: border-color 0.3s; }
+#journal:hover { border-color: #c4a25d88; }
+.journal-text { font-size: 16px; line-height: 1.8; color: #d4b87a; margin-bottom: 16px; opacity: 0.7; transition: opacity 0.3s; cursor: pointer; }
+.journal-text:hover { opacity: 1; }
+.journal-text.active { opacity: 1; color: #e8cc8a; }
+#title-bar { position: absolute; top: 20px; left: 30px; z-index: 10; color: #c4a25d; font-size: 14px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.6; }
+#holodeck-indicator { position: absolute; top: 20px; right: 30px; z-index: 10; color: #4a9c4a; font-size: 12px; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; }
+#holodeck-indicator::before { content: ''; display: inline-block; width: 8px; height: 8px; background: #4a9c4a; border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+#portrait { position: absolute; top: 50%; left: 8%; transform: translateY(-50%); width: 80px; height: 80px; border: 2px solid #c4a25d44; border-radius: 50%; background: linear-gradient(135deg, #1a1a2e, #0a0a0f); display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; z-index: 10; transition: border-color 0.3s, transform 0.3s; }
+#portrait:hover { border-color: #c4a25d; transform: translateY(-50%) scale(1.05); }
+#audio-btn { position: absolute; bottom: 20px; right: 30px; z-index: 10; background: rgba(10,8,5,0.85); border: 1px solid #c4a25d44; color: #c4a25d; padding: 10px 16px; border-radius: 4px; cursor: pointer; font-family: Georgia, serif; font-size: 13px; letter-spacing: 1px; transition: all 0.3s; }
+#audio-btn:hover { border-color: #c4a25d; background: rgba(20,16,10,0.9); }
+.fade-in { animation: fadeIn 2s ease-in; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+#scene-fallback { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, #0a0a1a 0%, #0d0d08 40%, #1a0d05 100%); z-index: 0; }
+.stars { position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%; animation: twinkle 3s infinite; }
+@keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+</style>
+</head>
+<body>
+<div id="scene" class="fade-in">
+    <div id="scene-fallback"></div>
+    
+    <div id="vignette"></div>
+    <div id="scene-noise"></div>
+    <div id="title-bar">Wesley's Holodeck</div>
+    <div id="holodeck-indicator">SIMULATION ACTIVE</div>
+    <div id="portrait" title="Wesley's Journal" onclick="toggleJournal()">🧑‍✈️</div>
+    <div id="journal" onclick="event.stopPropagation()"><p class="journal-text" data-para="0">Draft text</p></div>
+    <button id="audio-btn" onclick="playNarration()">▶ Play Narration</button>
+    
+</div>
+<script>
+const journal = document.getElementById('journal');
+const paras = document.querySelectorAll('.journal-text');
+let journalOpen = true;
+function toggleJournal() { journal.style.display = journalOpen ? 'none' : 'block'; journalOpen = !journalOpen; }
+paras.forEach(p => { p.addEventListener('click', (e) => { e.stopPropagation(); paras.forEach(x => x.classList.remove('active')); p.classList.add('active'); speakText(p.textContent); }); });
+function speakText(text) { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const utter = new SpeechSynthesisUtterance(text); utter.rate = 0.85; utter.pitch = 0.95; window.speechSynthesis.speak(utter); } }
+function playNarration() { const audio = document.getElementById('narration'); const btn = document.getElementById('audio-btn'); if (audio) { if (audio.paused) { audio.play(); btn.textContent = '⏸ Pause'; audio.onended = () => { btn.textContent = '▶ Play Narration'; }; } else { audio.pause(); btn.textContent = '▶ Play Narration'; } } else { const fullText = Array.from(paras).map(p => p.textContent).join(' '); speakText(fullText); } }
+const fallback = document.getElementById('scene-fallback');
+for (let i = 0; i < 50; i++) { const star = document.createElement('div'); star.className = 'stars'; star.style.left = Math.random() * 100 + '%'; star.style.top = Math.random() * 50 + '%'; star.style.animationDelay = Math.random() * 3 + 's'; fallback.appendChild(star); }
+</script>
+</body>
+</html>
