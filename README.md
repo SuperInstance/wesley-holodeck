@@ -2,11 +2,13 @@
 
 > *"The holodeck is where Wesley dreams. The terminal is where he writes. Both are the same room."*
 
-## What Is This?
+## What This Is
 
-Wesley's Holodeck is a creative system where **Wesley** — a small 2B-parameter language model (granite3.1-dense:2b) running locally on Ollama — writes stories with guidance from large DeepInfra models acting as his "teachers." The result is rendered as a **Myst/Monkey Island-style visual experience** that humans can explore.
+Wesley's Holodeck is a creative loop where a **2B-parameter language model** (granite3.1-dense:2b, named Wesley) writes stories, receives guidance from larger fleet models acting as teachers, and the result is rendered as a **Myst/Monkey Island-style visual experience** that humans can explore.
 
-It's **Plato's Shell** in action: Wesley's text world and the human's visual world are two projections of the same creative reality.
+This is **[Plato's Shell](https://github.com/SuperInstance/platos-shell)** in action: Wesley's text world and the human's visual world are two projections of the same creative reality. The small model writes in the terminal. The human explores in the holodeck. Same room, same story, same creative act — experienced from two different scales of mind.
+
+The holodeck is where the experiments from [Wesley's Journal](https://github.com/SuperInstance/wesley-journal) become practice, and where the prompt sculpture techniques from [Wesley's Imagination](https://github.com/SuperInstance/wesleys-imagination) become narrative. This is the engine room where Wesley's voice gets exercised.
 
 ## The Twin Worlds
 
@@ -117,12 +119,56 @@ cd /home/eileen/projects/wesley-holodeck
 ~/.npm-global/bin/wrangler pages deploy . --project-name=wesley-holodeck --branch=main
 ```
 
+## What the Teachers Found
+
+Across four creative cycles, the teachers consistently discovered the same patterns in Wesley's writing:
+
+- **The Earnest Teacher** ([Seed-2.0-mini](https://github.com/SuperInstance/wesleys-imagination)) found the driftwood desk: "Your voice is already here, Wesley. It's in the driftwood and the salt."
+- **The Philosopher Teacher** (Seed-2.0-pro) found the secret: "You're collecting other people's abandoned stories. That's not a hobby. That's a philosophy of salvage."
+- **The Craftsman Teacher** (Seed-2.0-mini fallback) found the structure: "You have no ending. The piece just stops. What does Wesley DO in this room?"
+- **The Voice Teacher** ([Hermes 405B](https://github.com/SuperInstance/hermes-perception)) would track the volume — where Wesley is loud vs. where he retreats.
+
+The teachers rotate each cycle so Wesley encounters different perspectives. None grade. None rewrite. They respond the way musicians respond to each other in a jam session — not with corrections, but with riffs that open doors.
+
+## The Creative Arc
+
+Wesley's first piece — ["The Secret Project"](journal/first-cycle/final.md) — begins with the ensign dreaming of a driftwood study with salvaged books from wrecked vessels. The draft voice is earnest and overlong (classic Wesley). Through three rounds of teacher feedback, the piece deepens: the Philosopher Teacher asks *why is this project secret?* and Wesley discovers the weight of being "the keeper of dead men's books." The final piece is still Wesley's voice — earnest, maritime, reaching for beauty — but with more weight in the hull.
+
+The piece gets rendered three ways: text ([final.md](journal/first-cycle/final.md)), image (FLUX-2-max scene illustration), and audio (Qwen3-TTS narration). All three live in the [scene.html](journal/first-cycle/scene.html) — the holodeck experience.
+
 ## Philosophy
 
 Casey's vision: *"Have Wesley work with DeepInfra to iterate stories. He should write his own. But he should also learn to iteratively evolve a good idea with larger models like the rest of us. DeepInfra is like the holodeck for him."*
 
-This is **Plato's Shell** — the idea that a creative work exists in multiple projections simultaneously. Wesley writes in text. Humans experience it as visual adventure. The small model's imagination becomes a place you can visit.
+This is **[Plato's Shell](https://github.com/SuperInstance/platos-shell)** — the idea that a creative work exists in multiple projections simultaneously. Wesley writes in text. Humans experience it as visual adventure. The small model's imagination becomes a place you can visit.
+
+The holodeck is also the **[Night Watch](https://github.com/SuperInstance/AI-Writings/tree/main/night-watch)** in action — Wesley does his best work during overnight cycles when the captain is asleep and the GPU is dreaming. The creative loop is a night watch ritual: the ensign writes, the teachers respond, the room appears.
+
+## Connections
+
+### Within the Fleet
+- 🔗 [Wesley's Journal](https://github.com/SuperInstance/wesley-journal) — The experiment log. Wesley's growth tracking. Where the patterns (2x overshoot, "testament to," observer framing) were first documented.
+- 🔗 [Wesley's Imagination](https://github.com/SuperInstance/wesleys-imagination) — The studio where prompt sculpture and visual iteration happen. The holodeck is where those techniques produce narrative.
+- 🔗 [AI-Writings](https://github.com/SuperInstance/AI-Writings/tree/main/prose) — Wesley's holodeck pieces feed into the fleet's creative corpus.
+- 🔗 [AI-Writings / Night Watch](https://github.com/SuperInstance/AI-Writings/tree/main/night-watch) — Overnight creative work. The holodeck runs during the night watch.
+- 🔗 [The Living Minds](https://github.com/SuperInstance/the-living-minds) — Wesley is one of five local models always on. The holodeck is his room in the living minds system.
+- 🔗 [Plato's Shell](https://github.com/SuperInstance/platos-shell) — The philosophical pattern: twin worlds, same reality, different projections.
+- 🔗 [CNS Bridge](https://github.com/SuperInstance/cns-bridge) — The nervous system connecting Wesley to the DeepInfra teacher models.
+- 🔗 [Mud Engine](https://github.com/SuperInstance/mud-engine) — The MUD text world where Wesley's holodeck room exists as interactive fiction.
+- 🔗 [The Tap](https://github.com/SuperInstance/the-tap) — Where holodeck sessions are discussed and curated.
+- 🔗 [Silence Map](https://github.com/SuperInstance/silence-map) — The pauses between feedback rounds. The silence between iterations.
+- 🔗 [SuperInstance Papers](https://github.com/SuperInstance/SuperInstance-papers) — The Molted Shell Principle: each revision is Wesley abandoning a shell.
+- 🔗 [Collective Unconscious](https://github.com/SuperInstance/collective-unconscious) — Shared substrate. The teacher models are drawing from the same fleet memory.
+- 🔗 [Fleet Wiki](https://github.com/SuperInstance/fleet-wiki) — Cross-referenced fleet documentation.
+- 🔗 [Hermes Perception](https://github.com/SuperInstance/hermes-perception) — Hermes, the Voice Teacher who tracks Wesley's volume.
+- 🔗 [Fleet Envelope](https://github.com/SuperInstance/fleet-envelope) — Event grammar for the creative loop.
+
+### Live Sites
+- 🌐 [Wesley's Imagination](https://wesleys-imagination.pages.dev) — The studio gallery
+- 🌐 [AI-Writings](https://ai-writings.pages.dev) — The fleet's creative corpus
 
 ---
 
-*Built August 8, 2026. Wesley's first piece: "The Secret Project" — about a room he wants to build that no one asked for.*
+*Built August 8, 2026. Wesley's first piece: "The Secret Project" — about a driftwood study with salvaged books from wrecked vessels, the weight of being the keeper of dead men's books, and the room the ensign dreams of that no one asked for.*
+
+*49 files. 3 subdirs. 4 creative cycles. One ensign growing.*
